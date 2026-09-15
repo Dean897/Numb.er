@@ -666,19 +666,45 @@ class _DigitSumPageState extends State<DigitSumPage> {
 
   void _sum() {
     final input = _controller.text.trim();
-    if (!RegExp(r'^\d+$').hasMatch(input)) {
+    if (input.isEmpty) {
       setState(() {
-        _error = 'Masukkan deretan angka tanpa spasi.';
+        _error = 'Masukkan angka atau kalimat yang berisi angka.';
         _process = null;
         _total = null;
       });
       return;
     }
-    final digits = input.split('').map(int.parse).toList();
+
+    final isDigitSequence = RegExp(r'^\d+$').hasMatch(input);
+    final numbers = isDigitSequence
+        ? input.split('').map(int.parse).toList()
+        : RegExp(r'\d+').allMatches(input).expand((match) {
+            final value = match.group(0)!;
+            final startsWithLetter =
+                match.start > 0 &&
+                RegExp(r'[A-Za-z]').hasMatch(input[match.start - 1]);
+            final endsWithLetter =
+                match.end < input.length &&
+                RegExp(r'[A-Za-z]').hasMatch(input[match.end]);
+
+            return startsWithLetter || endsWithLetter
+                ? value.split('').map(int.parse)
+                : [int.parse(value)];
+          }).toList();
+
+    if (numbers.isEmpty) {
+      setState(() {
+        _error = 'Tidak ditemukan angka pada input.';
+        _process = null;
+        _total = null;
+      });
+      return;
+    }
+
     setState(() {
       _error = null;
-      _process = digits.join(' + ');
-      _total = digits.reduce((sum, digit) => sum + digit);
+      _process = numbers.join(' + ');
+      _total = numbers.reduce((sum, number) => sum + number);
     });
   }
 
@@ -697,10 +723,10 @@ class _DigitSumPageState extends State<DigitSumPage> {
           children: [
             TextField(
               controller: _controller,
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.text,
               decoration: const InputDecoration(
-                labelText: 'Deretan angka tanpa spasi',
-                hintText: 'Contoh: 852',
+                labelText: 'Angka atau kalimat berisi angka',
+                hintText: 'Contoh: 852 atau Saya punya 12 dan 3',
               ),
             ),
             const SizedBox(height: 20),
