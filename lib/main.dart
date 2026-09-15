@@ -1,4 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+const _maxCalculatorDigits = 15;
+
+class _CalculatorDigitLimitFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digitCount = newValue.text.replaceAll(RegExp(r'[^0-9]'), '').length;
+    return digitCount <= _maxCalculatorDigits ? newValue : oldValue;
+  }
+}
 
 void main() {
   runApp(const TerminalMathApp());
@@ -79,7 +93,10 @@ class TerminalMathApp extends StatelessWidget {
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(color: borderGray),
@@ -235,7 +252,8 @@ class _LoginPageState extends State<LoginPage> {
                                 labelText: 'Password',
                                 prefixIcon: Icon(Icons.lock_outline),
                               ),
-                              validator: (value) => value == null || value.isEmpty
+                              validator: (value) =>
+                                  value == null || value.isEmpty
                                   ? 'Password wajib diisi'
                                   : null,
                               onFieldSubmitted: (_) => _login(),
@@ -326,9 +344,9 @@ class MainMenuPage extends StatelessWidget {
           Text(
             'Numb.er',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF2D3142),
-                ),
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF2D3142),
+            ),
           ),
           const SizedBox(height: 6),
           const Text(
@@ -460,11 +478,18 @@ class _CalculatorPageState extends State<CalculatorPage> {
   }
 
   void _calculate() {
-    final first = double.tryParse(_firstController.text.trim());
-    final second = double.tryParse(_secondController.text.trim());
-    if (first == null || second == null) {
+    final firstText = _firstController.text.trim();
+    final secondText = _secondController.text.trim();
+    final first = double.tryParse(firstText);
+    final second = double.tryParse(secondText);
+    final hasTooManyDigits = [firstText, secondText].any(
+      (value) =>
+          RegExp(r'[0-9]').allMatches(value).length > _maxCalculatorDigits,
+    );
+    if (first == null || second == null || hasTooManyDigits) {
       setState(() {
-        _error = 'Masukkan dua angka yang valid.';
+        _error =
+            'Masukkan angka yang valid dengan maksimal $_maxCalculatorDigits digit per input.';
         _result = null;
       });
       return;
@@ -483,6 +508,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
       '*' => first * second,
       _ => first / second,
     };
+    if (!result.isFinite) {
+      setState(() {
+        _error = 'Hasil terlalu besar untuk dihitung.';
+        _result = null;
+      });
+      return;
+    }
     setState(() {
       _error = null;
       _result =
@@ -505,12 +537,16 @@ class _CalculatorPageState extends State<CalculatorPage> {
           TextField(
             controller: _firstController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [_CalculatorDigitLimitFormatter()],
+            maxLength: 17,
             decoration: const InputDecoration(labelText: 'Angka pertama'),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _secondController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [_CalculatorDigitLimitFormatter()],
+            maxLength: 17,
             decoration: const InputDecoration(labelText: 'Angka kedua'),
           ),
           const SizedBox(height: 16),
@@ -716,17 +752,17 @@ class ResultCard extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: const Color(0xFF555555),
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: const Color(0xFF555555),
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
               value,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: const Color(0xFF1F2128),
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: const Color(0xFF1F2128),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
