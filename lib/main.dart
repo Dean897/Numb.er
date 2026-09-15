@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 const _maxCalculatorDigits = 15;
+const _maxOddEvenDigits = 18;
 
 class _CalculatorDigitLimitFormatter extends TextInputFormatter {
   @override
@@ -11,6 +12,17 @@ class _CalculatorDigitLimitFormatter extends TextInputFormatter {
   ) {
     final digitCount = newValue.text.replaceAll(RegExp(r'[^0-9]'), '').length;
     return digitCount <= _maxCalculatorDigits ? newValue : oldValue;
+  }
+}
+
+class _OddEvenDigitLimitFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digitCount = newValue.text.replaceAll(RegExp(r'[^0-9]'), '').length;
+    return digitCount <= _maxOddEvenDigits ? newValue : oldValue;
   }
 }
 
@@ -602,11 +614,19 @@ class _OddEvenPageState extends State<OddEvenPage> {
   }
 
   void _check() {
-    final number = int.tryParse(_controller.text.trim());
+    final input = _controller.text.trim();
+    final digitCount = RegExp(r'[0-9]').allMatches(input).length;
+    final isTooLong = digitCount > _maxOddEvenDigits;
+    final isValidInteger = RegExp(r'^-?[0-9]+$').hasMatch(input);
+    final lastDigit = isValidInteger
+        ? int.parse(input.substring(input.length - 1))
+        : null;
     setState(() {
-      _result = number == null
+      _result = isTooLong
+          ? 'Bilangan maksimal $_maxOddEvenDigits digit.'
+          : !isValidInteger
           ? 'Masukkan bilangan bulat yang valid.'
-          : '$number adalah bilangan ${number.isEven ? 'GENAP' : 'GANJIL'}.';
+          : '$input adalah bilangan ${lastDigit!.isEven ? 'GENAP' : 'GANJIL'}.';
     });
   }
 
@@ -626,7 +646,11 @@ class _OddEvenPageState extends State<OddEvenPage> {
             TextField(
               controller: _controller,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Masukkan bilangan'),
+              inputFormatters: [_OddEvenDigitLimitFormatter()],
+              maxLength: 19,
+              decoration: const InputDecoration(
+                labelText: 'Masukkan bilangan (maks. 18 digit)',
+              ),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
