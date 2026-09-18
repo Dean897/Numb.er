@@ -35,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // 100% Exact Mobile Background Image from User Asset
+          // 100% Exact Mobile Background Image expanding full width
           Positioned.fill(
             child: Image.asset(
               'assets/images/login_bg.png',
@@ -45,112 +45,117 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          // Mobile Layout Overlay
+          // Responsive Desktop & Mobile Overlay Layout
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Spacer(flex: 3),
-
-                  // Brand Logo & Name
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD3C3A4),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                      const Spacer(flex: 3),
+
+                      // Brand Logo & Name
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD3C3A4),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          const Text(
+                            'KalaRiset',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(height: 24),
+
+                      // Main Headline Text
                       const Text(
-                        'KalaRiset',
+                        'Selamat Datang,\nPeneliti!',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 26,
+                          fontSize: 36,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 0.2,
+                          height: 1.25,
+                          letterSpacing: -0.5,
                         ),
+                      ),
+
+                      const Spacer(flex: 3),
+
+                      // Action Buttons (Daftar & Masuk)
+                      Column(
+                        children: [
+                          // Button Daftar
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: () => _openAuthBottomSheet(context,
+                                  isRegister: true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFDAD5CE),
+                                foregroundColor: const Color(0xFFB84A41),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Text(
+                                'Daftar',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Button Masuk
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: () => _openAuthBottomSheet(context,
+                                  isRegister: false),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFB84A41),
+                                foregroundColor: const Color(0xFFF7F2EC),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Text(
+                                'Masuk',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-
-                  // Main Headline Text
-                  const Text(
-                    'Selamat Datang,\nPeneliti!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      height: 1.25,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-
-                  const Spacer(flex: 3),
-
-                  // Action Buttons (Daftar & Masuk)
-                  Column(
-                    children: [
-                      // Button Daftar
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () =>
-                              _openAuthBottomSheet(context, isRegister: true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFDAD5CE),
-                            foregroundColor: const Color(0xFFB84A41),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: const Text(
-                            'Daftar',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Button Masuk
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () =>
-                              _openAuthBottomSheet(context, isRegister: false),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFB84A41),
-                            foregroundColor: const Color(0xFFF7F2EC),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: const Text(
-                            'Masuk',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
           ),
