@@ -19,7 +19,16 @@ void main() {
     await tester.tap(find.text('Login'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Buku jurnal digital'), findsOneWidget);
-    expect(find.text('Hitung'), findsOneWidget);
+    expect(find.text('Halaman Utama'), findsOneWidget);
+    expect(find.textContaining('Data Kelompok'), findsOneWidget);
+    expect(find.textContaining('Menu Perhitungan'), findsOneWidget);
+    expect(find.textContaining('Jurnal Riset'), findsOneWidget);
+    expect(find.textContaining('Konversi Tanggal Lahir'), findsOneWidget);
+    await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+    await tester.pump();
+    expect(find.textContaining('Kalender Weton & Saka Bali'), findsOneWidget);
+    expect(find.text('Utama'), findsOneWidget);
+    expect(find.text('Stopwatch'), findsOneWidget);
+    expect(find.text('Manual'), findsOneWidget);
   });
 }

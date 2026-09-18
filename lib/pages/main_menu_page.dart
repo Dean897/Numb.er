@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/charcoal_app_bar.dart';
 import 'age_calculator_page.dart';
-import 'calculator_page.dart';
+import 'calculation_menu_page.dart';
 import 'culture_info_page.dart';
-import 'digit_sum_page.dart';
+import 'group_data_page.dart';
 import 'journal_page.dart';
-import 'odd_even_page.dart';
+import 'manual_page.dart';
 import 'stopwatch_page.dart';
 
 class MainMenuPage extends StatefulWidget {
@@ -18,122 +18,75 @@ class MainMenuPage extends StatefulWidget {
 class _MainMenuPageState extends State<MainMenuPage> {
   int _selectedIndex = 0;
 
-  static const _titles = ['Jurnal', 'Hitung', 'Observasi', 'Kultur & Info'];
-
-  void _openPage(BuildContext context, Widget page) {
+  void _openPage(Widget page) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
   }
 
-  Widget _journalTab() {
-    return const JournalPage(embedded: true);
-  }
-
-  Widget _calculateTab() {
+  Widget _homePage() {
     final menuItems = [
       (
-        'Kalkulator operasi',
-        'Hitung kebutuhan logistik dan angka lapangan',
+        'Data Kelompok',
+        'Lihat anggota dan pembagian tugas kelompok.',
+        Icons.groups_outlined,
+        () => _openPage(
+          const GroupDataPage(
+            members: [
+              ('Deandra', '124240144', 'Programmer'),
+              ('Habrian', '124240126', 'Tester, UI/UX'),
+              ('Titan', '124240152', 'UI/UX'),
+            ],
+          ),
+        ),
+      ),
+      (
+        'Menu Perhitungan',
+        'Kalkulator operasi, ganjil/genap, dan total angka.',
         Icons.calculate_outlined,
-        () => _openPage(context, const CalculatorPage()),
+        () => _openPage(const CalculationMenuPage()),
       ),
       (
-        'Ganjil / genap',
-        'Bagi ID responden ke kelompok sampling',
-        Icons.numbers_outlined,
-        () => _openPage(context, const OddEvenPage()),
+        'Jurnal Riset',
+        'Tambah, ubah, lihat, dan hapus catatan penelitian.',
+        Icons.menu_book_outlined,
+        () => _openPage(const JournalPage()),
       ),
       (
-        'Total angka',
-        'Jumlahkan skor kuesioner dengan cepat',
-        Icons.functions,
-        () => _openPage(context, const DigitSumPage()),
+        'Konversi Tanggal Lahir',
+        'Hitung umur dalam tahun, bulan, hari, jam, menit, dan detik.',
+        Icons.cake_outlined,
+        () => _openPage(const AgeCalculatorPage()),
+      ),
+      (
+        'Kalender Weton & Saka Bali',
+        'Catat dan pahami konteks kalender budaya lokal.',
+        Icons.calendar_month_outlined,
+        () => _openPage(const CultureInfoPage()),
       ),
     ];
-    return _toolList('Alat hitung lapangan', menuItems);
-  }
 
-  Widget _observationsTab() {
-    return _toolList('Observasi', [
-      (
-        'Stopwatch wawancara',
-        'Ukur durasi wawancara dan peristiwa',
-        Icons.timer_outlined,
-        () => _openPage(context, const StopwatchPage()),
-      ),
-      (
-        'Konversi umur presisi',
-        'Hitung umur responden sampai hari',
-        Icons.cake_outlined,
-        () => _openPage(context, const AgeCalculatorPage()),
-      ),
-    ]);
-  }
-
-  Widget _cultureTab() {
-    return _toolList('Konteks waktu dan bantuan', [
-      (
-        'Weton dan kalender lokal',
-        'Catat konteks budaya dari narasumber',
-        Icons.calendar_month_outlined,
-        () => _openPage(context, const CultureInfoPage()),
-      ),
-      (
-        'Bantuan dan etika riset',
-        'Panduan informed consent dan SOP lapangan',
-        Icons.volunteer_activism_outlined,
-        () => _openPage(context, const CultureInfoPage()),
-      ),
-    ]);
-  }
-
-  Widget _toolList(
-    String heading,
-    List<(String, String, IconData, VoidCallback)> items,
-  ) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       children: [
         Text(
-          heading,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          'KalaRiset',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
             color: const Color(0xFF2D241B),
           ),
         ),
         const SizedBox(height: 6),
         const Text(
-          'Pilih alat yang dibutuhkan untuk kegiatan hari ini.',
+          'Pilih fitur untuk mendukung kegiatan riset lapangan.',
           style: TextStyle(color: Color(0xFF71675C)),
         ),
         const SizedBox(height: 20),
-        ...items.map(
-          (item) => Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
-              leading: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFE6A9),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(item.$3, color: const Color(0xFF8E5D13)),
-              ),
-              title: Text(
-                item.$1,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2D241B),
-                ),
-              ),
-              subtitle: Text(item.$2),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: item.$4,
-            ),
+        ...menuItems.asMap().entries.map(
+          (entry) => _MainMenuCard(
+            number: entry.key + 1,
+            title: entry.value.$1,
+            description: entry.value.$2,
+            icon: entry.value.$3,
+            onTap: entry.value.$4,
           ),
         ),
       ],
@@ -142,47 +95,81 @@ class _MainMenuPageState extends State<MainMenuPage> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = [_homePage(), const StopwatchPage(), const ManualPage()];
+    const titles = ['Halaman Utama', 'Stopwatch', 'Manual & Bantuan'];
+
     return Scaffold(
       appBar: buildCharcoalAppBar(
         context,
-        title: _titles[_selectedIndex],
+        title: titles[_selectedIndex],
         showBackButton: false,
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          _journalTab(),
-          _calculateTab(),
-          _observationsTab(),
-          _cultureTab(),
-        ],
-      ),
+      body: IndexedStack(index: _selectedIndex, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) =>
             setState(() => _selectedIndex = index),
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: 'Jurnal',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calculate_outlined),
-            selectedIcon: Icon(Icons.calculate),
-            label: 'Hitung',
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Utama',
           ),
           NavigationDestination(
             icon: Icon(Icons.timer_outlined),
             selectedIcon: Icon(Icons.timer),
-            label: 'Observasi',
+            label: 'Stopwatch',
           ),
           NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: 'Kultur & Info',
+            icon: Icon(Icons.menu_book_outlined),
+            selectedIcon: Icon(Icons.menu_book),
+            label: 'Manual',
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MainMenuCard extends StatelessWidget {
+  const _MainMenuCard({
+    required this.number,
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final int number;
+  final String title;
+  final String description;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          backgroundColor: const Color(0xFFFFE6A9),
+          foregroundColor: const Color(0xFF8E5D13),
+          child: Icon(icon),
+        ),
+        title: Text(
+          '$number. $title',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2D241B),
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(description),
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
       ),
     );
   }
