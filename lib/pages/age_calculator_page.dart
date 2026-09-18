@@ -11,7 +11,7 @@ class _AgeCalculatorPageState extends State<AgeCalculatorPage> {
   DateTime? _birthDate;
   DateTime? _referenceDate;
 
-  Future<void> _pickDate({required bool birthDate}) async {
+  Future<void> _pickDateTime({required bool birthDate}) async {
     final selected = await showDatePicker(
       context: context,
       firstDate: DateTime(1900),
@@ -20,19 +20,34 @@ class _AgeCalculatorPageState extends State<AgeCalculatorPage> {
           ? (_birthDate ?? DateTime(2000))
           : (_referenceDate ?? DateTime.now()),
     );
-    if (selected == null) return;
+    if (selected == null || !mounted) return;
+    final selectedTime = await showTimePicker(
+      context: context,
+      initialTime: birthDate
+          ? TimeOfDay.fromDateTime(_birthDate ?? DateTime(2000))
+          : TimeOfDay.fromDateTime(_referenceDate ?? DateTime.now()),
+    );
+    if (selectedTime == null) return;
+    final selectedDateTime = DateTime(
+      selected.year,
+      selected.month,
+      selected.day,
+      selectedTime.hour,
+      selectedTime.minute,
+    );
     setState(() {
       if (birthDate) {
-        _birthDate = selected;
+        _birthDate = selectedDateTime;
       } else {
-        _referenceDate = selected;
+        _referenceDate = selectedDateTime;
       }
     });
   }
 
   String _dateLabel(DateTime? date) {
     if (date == null) return 'Pilih tanggal';
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} '
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   String? _ageResult() {
@@ -44,6 +59,21 @@ class _AgeCalculatorPageState extends State<AgeCalculatorPage> {
     var years = _referenceDate!.year - _birthDate!.year;
     var months = _referenceDate!.month - _birthDate!.month;
     var days = _referenceDate!.day - _birthDate!.day;
+    var hours = _referenceDate!.hour - _birthDate!.hour;
+    var minutes = _referenceDate!.minute - _birthDate!.minute;
+    var seconds = _referenceDate!.second - _birthDate!.second;
+    if (seconds < 0) {
+      minutes--;
+      seconds += 60;
+    }
+    if (minutes < 0) {
+      hours--;
+      minutes += 60;
+    }
+    if (hours < 0) {
+      days--;
+      hours += 24;
+    }
     if (days < 0) {
       months--;
       final previousMonth = DateTime(
@@ -57,7 +87,8 @@ class _AgeCalculatorPageState extends State<AgeCalculatorPage> {
       years--;
       months += 12;
     }
-    return '$years tahun, $months bulan, $days hari';
+    return '$years tahun, $months bulan, $days hari, '
+        '$hours jam, $minutes menit, $seconds detik';
   }
 
   @override
@@ -76,13 +107,13 @@ class _AgeCalculatorPageState extends State<AgeCalculatorPage> {
           _dateField(
             label: 'Tanggal lahir',
             value: _birthDate,
-            onTap: () => _pickDate(birthDate: true),
+            onTap: () => _pickDateTime(birthDate: true),
           ),
           const SizedBox(height: 12),
           _dateField(
             label: 'Tanggal acuan',
             value: _referenceDate,
-            onTap: () => _pickDate(birthDate: false),
+            onTap: () => _pickDateTime(birthDate: false),
           ),
           if (result != null) ...[
             const SizedBox(height: 24),
