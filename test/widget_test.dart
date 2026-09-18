@@ -26,7 +26,7 @@ void main() {
     expect(find.textContaining('Konversi Tanggal Lahir'), findsOneWidget);
     await tester.drag(find.byType(ListView).first, const Offset(0, -400));
     await tester.pump();
-    expect(find.textContaining('Kalender Weton & Saka Bali'), findsOneWidget);
+    expect(find.textContaining('Konversi Kalender'), findsOneWidget);
     expect(find.text('Utama'), findsOneWidget);
     expect(find.text('Stopwatch'), findsOneWidget);
     expect(find.text('Manual'), findsOneWidget);

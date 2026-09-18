@@ -57,8 +57,8 @@ class _MainMenuPageState extends State<MainMenuPage> {
         () => _openPage(const AgeCalculatorPage()),
       ),
       (
-        'Kalender Weton & Saka Bali',
-        'Catat dan pahami konteks kalender budaya lokal.',
+        'Konversi Kalender',
+        'Ubah tanggal Masehi menjadi Hijriah, Weton, dan Saka Bali.',
         Icons.calendar_month_outlined,
         () => _openPage(const CultureInfoPage()),
       ),
