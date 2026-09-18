@@ -7,7 +7,7 @@ AppBar buildCharcoalAppBar(
   bool showBackButton = true,
 }) {
   return AppBar(
-    backgroundColor: const Color(0xFF2D3142),
+    backgroundColor: const Color(0xFF2D241B),
     foregroundColor: Colors.white,
     elevation: 2,
     automaticallyImplyLeading: false,

@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
             height: 250,
             child: Container(
               decoration: const BoxDecoration(
-                color: Color(0xFFD8D8E0),
+                color: Color(0xFFE5B95C),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.elliptical(260, 140),
                   bottomRight: Radius.elliptical(260, 140),
@@ -80,24 +80,24 @@ class _LoginPageState extends State<LoginPage> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const Icon(
-                              Icons.calculate_outlined,
+                              Icons.menu_book_outlined,
                               size: 64,
-                              color: Color(0xFF2D3142),
+                              color: Color(0xFFC98A2E),
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Numb.er',
+                              'KalaRiset',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.headlineMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF2D3142),
+                                    color: const Color(0xFF2D241B),
                                     letterSpacing: 1.2,
                                   ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'SELAMAT DATANG',
+                              'JURNAL RISET LAPANGAN',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.titleSmall
                                   ?.copyWith(

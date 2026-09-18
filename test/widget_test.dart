@@ -12,14 +12,14 @@ import 'package:terminal_math_team_utility/main.dart';
 
 void main() {
   testWidgets('login menampilkan menu utama', (WidgetTester tester) async {
-    await tester.pumpWidget(const TerminalMathApp());
+    await tester.pumpWidget(const KalaRisetApp());
 
     await tester.enterText(find.byType(TextFormField).at(0), 'admin');
     await tester.enterText(find.byType(TextFormField).at(1), '12345');
     await tester.tap(find.text('Login'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Menu Utama'), findsOneWidget);
-    expect(find.text('Kalkulator'), findsOneWidget);
+    expect(find.text('Buku jurnal digital'), findsOneWidget);
+    expect(find.text('Hitung'), findsOneWidget);
   });
 }
