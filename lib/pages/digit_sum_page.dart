@@ -55,6 +55,11 @@ class _DigitSumPageState extends State<DigitSumPage> {
             TextField(
               controller: _controller,
               keyboardType: TextInputType.number,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2D241B),
+              ),
               decoration: const InputDecoration(
                 labelText: 'Deretan angka tanpa spasi',
                 hintText: 'Contoh: 852',

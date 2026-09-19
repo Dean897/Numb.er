@@ -84,6 +84,11 @@ class _CalculatorPageState extends State<CalculatorPage> {
           TextField(
             controller: _firstController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2D241B),
+            ),
             inputFormatters: [CalculatorDigitLimitFormatter()],
             maxLength: 17,
             decoration: const InputDecoration(labelText: 'Angka pertama'),
@@ -92,6 +97,11 @@ class _CalculatorPageState extends State<CalculatorPage> {
           TextField(
             controller: _secondController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2D241B),
+            ),
             inputFormatters: [CalculatorDigitLimitFormatter()],
             maxLength: 17,
             decoration: const InputDecoration(labelText: 'Angka kedua'),

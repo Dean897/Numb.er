@@ -44,6 +44,11 @@ class _OddEvenPageState extends State<OddEvenPage> {
             TextField(
               controller: _controller,
               keyboardType: TextInputType.number,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2D241B),
+              ),
               decoration: const InputDecoration(labelText: 'Masukkan bilangan'),
             ),
             const SizedBox(height: 20),
