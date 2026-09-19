@@ -28,14 +28,14 @@ class _MainMenuPageState extends State<MainMenuPage> {
         'Lihat Anggota dan pembagian Tugas',
         Icons.groups_outlined,
         () => _openPage(
-              const GroupDataPage(
-                members: [
-                  ('Deandra', '124240144', 'Programmer'),
-                  ('Habrian', '124240126', 'Tester, UI/UX'),
-                  ('Titan', '124240152', 'UI/UX'),
-                ],
-              ),
-            ),
+          const GroupDataPage(
+            members: [
+              ('Deandra', '124240144', 'Programmer'),
+              ('Habrian', '124240126', 'Tester, UI/UX'),
+              ('Titan', '124240152', 'UI/UX'),
+            ],
+          ),
+        ),
       ),
       (
         'Kalkulator',
@@ -109,8 +109,9 @@ class _MainMenuPageState extends State<MainMenuPage> {
     required String label,
   }) {
     final isSelected = _selectedIndex == index;
-    final color =
-        isSelected ? const Color(0xFF3E2712) : const Color(0xFF7A5B36);
+    final color = isSelected
+        ? const Color(0xFF3E2712)
+        : const Color(0xFF7A5B36);
 
     return Expanded(
       child: InkWell(
@@ -120,11 +121,7 @@ class _MainMenuPageState extends State<MainMenuPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: color,
-              size: isSelected ? 28 : 26,
-            ),
+            Icon(icon, color: color, size: isSelected ? 28 : 26),
             const SizedBox(height: 2),
             Text(
               label,
@@ -142,7 +139,11 @@ class _MainMenuPageState extends State<MainMenuPage> {
 
   @override
   Widget build(BuildContext context) {
-    final pages = [_homePage(), const StopwatchPage(), const ManualPage()];
+    final pages = [
+      _homePage(),
+      const StopwatchPage(embedded: true),
+      const ManualPage(),
+    ];
 
     return Scaffold(
       body: Stack(
@@ -159,10 +160,7 @@ class _MainMenuPageState extends State<MainMenuPage> {
 
           // Main Page View Overlay
           SafeArea(
-            child: IndexedStack(
-              index: _selectedIndex,
-              children: pages,
-            ),
+            child: IndexedStack(index: _selectedIndex, children: pages),
           ),
 
           // Full-width Bottom Navbar matching Gambar 2
@@ -172,9 +170,7 @@ class _MainMenuPageState extends State<MainMenuPage> {
             bottom: 0,
             child: Container(
               height: 68,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE29F2B),
-              ),
+              decoration: const BoxDecoration(color: Color(0xFFE29F2B)),
               child: SafeArea(
                 top: false,
                 child: Row(
@@ -225,10 +221,7 @@ class _CustomMenuCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFE5A638),
-          width: 2.5,
-        ),
+        border: Border.all(color: const Color(0xFFE5A638), width: 2.5),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F000000),
@@ -255,11 +248,7 @@ class _CustomMenuCard extends StatelessWidget {
                     color: const Color(0xFFFBE4B5),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    icon,
-                    color: const Color(0xFF3D2E1E),
-                    size: 26,
-                  ),
+                  child: Icon(icon, color: const Color(0xFF3D2E1E), size: 26),
                 ),
                 const SizedBox(width: 14),
 
@@ -305,5 +294,3 @@ class _CustomMenuCard extends StatelessWidget {
     );
   }
 }
-
-
