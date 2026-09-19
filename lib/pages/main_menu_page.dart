@@ -142,7 +142,7 @@ class _MainMenuPageState extends State<MainMenuPage> {
     final pages = [
       _homePage(),
       const StopwatchPage(embedded: true),
-      const ManualPage(),
+      const ManualPage(embedded: true),
     ];
 
     return Scaffold(
