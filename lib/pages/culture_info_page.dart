@@ -24,8 +24,9 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
   // Mode 1: Historis Inputs
   int _historisDay = 4;
   String _historisMonth = "Rabi'ul Akhir";
-  final TextEditingController _historisYearController =
-      TextEditingController(text: '1448');
+  final TextEditingController _historisYearController = TextEditingController(
+    text: '1448',
+  );
 
   // Conversion Result State
   bool _hasConverted = false;
@@ -61,6 +62,21 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
     'Kadasa',
     'Desta',
     'Sada',
+  ];
+
+  static const List<String> _javaneseMonths = [
+    'Sura',
+    'Sapar',
+    'Mulud',
+    'Bakda Mulud',
+    'Jumadilawal',
+    'Jumadilakir',
+    'Rejeb',
+    'Ruwah',
+    'Pasa',
+    'Sawal',
+    'Sela',
+    'Besar',
   ];
 
   @override
@@ -112,9 +128,15 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
           _resultTargetValue =
               "$_historisDay.5 ${_hijriMonths[mIndex - 1]} $year H";
         } else if (_selectedTarget == 'Weton') {
+          final mIndex = _javaneseMonths.contains(_historisMonth)
+              ? _javaneseMonths.indexOf(_historisMonth) + 1
+              : 1;
+          final year = int.tryParse(_historisYearController.text) ?? 1959;
+          final gDate = _javaneseToMasehi(_historisDay, mIndex, year);
+          _resultMasehiText = _formatMasehiFull(gDate);
           _resultTargetLabel = 'Weton Jawa';
-          _resultTargetValue = "Jum'at Kliwon";
-          _resultMasehiText = "Jum'at, 18 September 2026 M";
+          _resultTargetValue =
+              "$_historisDay $_historisMonth $year Jawa (${_formatWetonFull(gDate)})";
         } else {
           final mIndex = _sakaMonths.contains(_historisMonth)
               ? _sakaMonths.indexOf(_historisMonth) + 1
@@ -204,9 +226,7 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
             bottom: 0,
             child: Container(
               height: 68,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE29F2B),
-              ),
+              decoration: const BoxDecoration(color: Color(0xFFE29F2B)),
               child: SafeArea(
                 top: false,
                 child: Row(
@@ -217,7 +237,8 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
                       onTap: () {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                              builder: (_) => const MainMenuPage()),
+                            builder: (_) => const MainMenuPage(),
+                          ),
                           (route) => false,
                         );
                       },
@@ -228,7 +249,8 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (_) => const StopwatchPage()),
+                            builder: (_) => const StopwatchPage(),
+                          ),
                         );
                       },
                     ),
@@ -237,8 +259,7 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
                       label: 'Help',
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => const ManualPage()),
+                          MaterialPageRoute(builder: (_) => const ManualPage()),
                         );
                       },
                     ),
@@ -254,8 +275,9 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
 
   // Top Segmented Control Button (Masehi ke Historis vs Historis ke Masehi)
   Widget _buildTopToggleControl() {
-    final rightLabel =
-        _selectedTarget == 'Hijriah' && _modeIndex == 1 ? 'Hijriah   Masehi' : 'Historis   Masehi';
+    final rightLabel = _selectedTarget == 'Hijriah' && _modeIndex == 1
+        ? 'Hijriah   Masehi'
+        : 'Historis   Masehi';
 
     return Center(
       child: Container(
@@ -347,10 +369,7 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE5A638),
-          width: 2.5,
-        ),
+        border: Border.all(color: const Color(0xFFE5A638), width: 2.5),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F000000),
@@ -394,10 +413,7 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
                 ),
                 child: const Text(
                   'Konversi Penanggalan',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -484,8 +500,11 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
 
   // Form for Mode 1: Historis -> Masehi (Gambar 3)
   Widget _buildHistorisToMasehiForm() {
-    final monthsList =
-        _selectedTarget == 'Saka Bali' ? _sakaMonths : _hijriMonths;
+    final monthsList = _selectedTarget == 'Saka Bali'
+        ? _sakaMonths
+        : _selectedTarget == 'Weton'
+        ? _javaneseMonths
+        : _hijriMonths;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -530,14 +549,21 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
                       child: DropdownButton<int>(
                         value: _historisDay,
                         isExpanded: true,
-                        icon: const Icon(Icons.calendar_month,
-                            color: Colors.black87, size: 20),
+                        icon: const Icon(
+                          Icons.calendar_month,
+                          color: Colors.black87,
+                          size: 20,
+                        ),
                         items: List.generate(30, (i) => i + 1)
-                            .map((d) => DropdownMenuItem<int>(
-                                  value: d,
-                                  child: Text('$d',
-                                      style: const TextStyle(fontSize: 14)),
-                                ))
+                            .map(
+                              (d) => DropdownMenuItem<int>(
+                                value: d,
+                                child: Text(
+                                  '$d',
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ),
+                            )
                             .toList(),
                         onChanged: (val) {
                           if (val != null) {
@@ -580,11 +606,15 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
                             : monthsList.first,
                         isExpanded: true,
                         items: monthsList
-                            .map((m) => DropdownMenuItem<String>(
-                                  value: m,
-                                  child: Text(m,
-                                      style: const TextStyle(fontSize: 14)),
-                                ))
+                            .map(
+                              (m) => DropdownMenuItem<String>(
+                                value: m,
+                                child: Text(
+                                  m,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ),
+                            )
                             .toList(),
                         onChanged: (val) {
                           if (val != null) {
@@ -607,8 +637,8 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
           _selectedTarget == 'Saka Bali'
               ? 'Tahun Saka Bali'
               : _selectedTarget == 'Weton'
-                  ? 'Tahun Weton'
-                  : 'Tahun Hijriah (H)',
+              ? 'Tahun Weton'
+              : 'Tahun Hijriah (H)',
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,
@@ -631,8 +661,10 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
             ),
             decoration: const InputDecoration(
               isDense: true,
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
@@ -654,9 +686,15 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
           if (_selectedTarget == 'Hijriah' &&
               !_hijriMonths.contains(_historisMonth)) {
             _historisMonth = _hijriMonths[3]; // Rabi'ul Akhir
+            _historisYearController.text = '1448';
           } else if (_selectedTarget == 'Saka Bali' &&
               !_sakaMonths.contains(_historisMonth)) {
             _historisMonth = _sakaMonths[0]; // Kasa
+            _historisYearController.text = '1948';
+          } else if (_selectedTarget == 'Weton' &&
+              !_javaneseMonths.contains(_historisMonth)) {
+            _historisMonth = _javaneseMonths[0]; // Sura
+            _historisYearController.text = '1959';
           }
         });
       },
@@ -685,10 +723,7 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE5A638),
-          width: 2.5,
-        ),
+        border: Border.all(color: const Color(0xFFE5A638), width: 2.5),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F000000),
@@ -722,8 +757,10 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
               // White Box 1: Masehi Result
               Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -757,8 +794,10 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
               // White Box 2: Historical Result
               Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -807,11 +846,7 @@ class _CultureInfoPageState extends State<CultureInfoPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: const Color(0xFF3E2712),
-              size: 26,
-            ),
+            Icon(icon, color: const Color(0xFF3E2712), size: 26),
             const SizedBox(height: 2),
             Text(
               label,
@@ -834,7 +869,15 @@ String _formatDateDigits(DateTime date) {
 }
 
 String _formatMasehiFull(DateTime date) {
-  const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu', 'Minggu'];
+  const days = [
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    "Jum'at",
+    'Sabtu',
+    'Minggu',
+  ];
   const months = [
     'Januari',
     'Februari',
@@ -847,7 +890,7 @@ String _formatMasehiFull(DateTime date) {
     'September',
     'Oktober',
     'November',
-    'Desember'
+    'Desember',
   ];
   return "${days[date.weekday - 1]}, ${date.day} ${months[date.month - 1]} ${date.year} M";
 }
@@ -873,7 +916,15 @@ String _formatHijriFull(DateTime date) {
 
 String _formatWetonFull(DateTime date) {
   const pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
-  const weekdays = ['Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu', 'Minggu'];
+  const weekdays = [
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    "Jum'at",
+    'Sabtu',
+    'Minggu',
+  ];
   final daysFromRef = date.difference(DateTime(2024, 1, 1)).inDays;
   final pasaranIndex = (daysFromRef + 3) % 5;
   final safePasaranIndex = pasaranIndex < 0 ? pasaranIndex + 5 : pasaranIndex;
@@ -919,13 +970,19 @@ _HijriDate _toHijri(DateTime date) {
 }
 
 DateTime _hijriToMasehi(int day, int month, int year) {
-  final julianDay = day +
+  final julianDay =
+      day +
       ((29.5 * (month - 1)).ceil()) +
       (year - 1) * 354 +
       ((3 + 11 * year) ~/ 30) +
       1948440 -
       1;
   return _julianDayToGregorian(julianDay);
+}
+
+DateTime _javaneseToMasehi(int day, int month, int year) {
+  // Javanese lunar month names follow the same month order as Hijriah.
+  return _hijriToMasehi(day, month, year - 511);
 }
 
 DateTime _julianDayToGregorian(int jd) {
