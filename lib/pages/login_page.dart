@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../data/journal_database.dart';
 import 'main_menu_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -51,8 +52,10 @@ class _LoginPageState extends State<LoginPage> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500),
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 24,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -106,8 +109,10 @@ class _LoginPageState extends State<LoginPage> {
                             width: double.infinity,
                             height: 56,
                             child: ElevatedButton(
-                              onPressed: () => _openAuthBottomSheet(context,
-                                  isRegister: true),
+                              onPressed: () => _openAuthBottomSheet(
+                                context,
+                                isRegister: true,
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFDAD5CE),
                                 foregroundColor: const Color(0xFFB84A41),
@@ -132,8 +137,10 @@ class _LoginPageState extends State<LoginPage> {
                             width: double.infinity,
                             height: 56,
                             child: ElevatedButton(
-                              onPressed: () => _openAuthBottomSheet(context,
-                                  isRegister: false),
+                              onPressed: () => _openAuthBottomSheet(
+                                context,
+                                isRegister: false,
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFB84A41),
                                 foregroundColor: const Color(0xFFF7F2EC),
@@ -144,9 +151,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               child: const Text(
                                 'Masuk',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                ),
+                                style: TextStyle(fontSize: 18),
                               ),
                             ),
                           ),
@@ -175,11 +180,13 @@ class _AuthBottomSheetContent extends StatefulWidget {
 }
 
 class _AuthBottomSheetContentState extends State<_AuthBottomSheetContent> {
+  final JournalDatabase _database = JournalDatabase.instance;
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   String? _errorMessage;
   bool _obscurePassword = true;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -188,25 +195,69 @@ class _AuthBottomSheetContentState extends State<_AuthBottomSheetContent> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_isSubmitting) return;
 
-    if (_usernameController.text.trim() == 'admin' &&
-        _passwordController.text == '12345') {
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+    });
+
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text;
+    try {
+      if (widget.isRegister) {
+        final created = await _database.createUser(
+          username: username,
+          password: password,
+        );
+        if (!mounted) return;
+        if (!created) {
+          setState(() {
+            _isSubmitting = false;
+            _errorMessage = 'Username sudah digunakan.';
+          });
+          return;
+        }
+        Navigator.of(context).pop();
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainMenuPage()),
+        );
+        return;
+      }
+
+      final user = await _database.authenticateUser(
+        username: username,
+        password: password,
+      );
+      if (!mounted) return;
+      if (user == null) {
+        setState(() {
+          _isSubmitting = false;
+          _errorMessage = 'Username atau password salah.';
+        });
+        return;
+      }
       Navigator.of(context).pop();
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const MainMenuPage()),
       );
-      return;
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+        _errorMessage =
+            'Database belum siap. Tutup dan buka kembali aplikasi, lalu coba lagi.';
+      });
     }
-
-    setState(() => _errorMessage = 'Username atau password salah.');
   }
 
   @override
   Widget build(BuildContext context) {
-    final title =
-        widget.isRegister ? 'Daftar Akun KalaRiset' : 'Masuk ke KalaRiset';
+    final title = widget.isRegister
+        ? 'Daftar Akun KalaRiset'
+        : 'Masuk ke KalaRiset';
     final buttonLabel = widget.isRegister ? 'Daftar' : 'Masuk';
 
     return Container(
@@ -239,17 +290,14 @@ class _AuthBottomSheetContentState extends State<_AuthBottomSheetContent> {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2D241B),
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF2D241B),
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'Masukkan username dan password Anda',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                 ),
                 const SizedBox(height: 24),
                 TextFormField(
@@ -301,7 +349,7 @@ class _AuthBottomSheetContentState extends State<_AuthBottomSheetContent> {
                 SizedBox(
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: _submit,
+                    onPressed: _isSubmitting ? null : _submit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFB84A41),
                       foregroundColor: Colors.white,
@@ -310,13 +358,22 @@ class _AuthBottomSheetContentState extends State<_AuthBottomSheetContent> {
                       ),
                       elevation: 0,
                     ),
-                    child: Text(
-                      buttonLabel,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            buttonLabel,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -328,5 +385,3 @@ class _AuthBottomSheetContentState extends State<_AuthBottomSheetContent> {
     );
   }
 }
-
-

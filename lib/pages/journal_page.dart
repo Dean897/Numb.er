@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/journal_database.dart';
 import 'main_menu_page.dart';
 import 'manual_page.dart';
 import 'stopwatch_page.dart';
@@ -27,34 +28,10 @@ class JournalPage extends StatefulWidget {
 }
 
 class _JournalPageState extends State<JournalPage> {
-  int _nextId = 5;
+  final JournalDatabase _journalDatabase = JournalDatabase.instance;
+  bool _hasLocalChanges = false;
 
-  final List<JournalEntry> _entries = [
-    JournalEntry(
-      id: 1,
-      name: 'Bapak Prabowo',
-      location: 'Balai Desa',
-      note: 'Diskusi mengenai pembangunan infrastruktur desa.',
-    ),
-    JournalEntry(
-      id: 2,
-      name: 'Bapak Jokowi',
-      location: 'Solo',
-      note: 'Wawancara tentang program UMKM lokal.',
-    ),
-    JournalEntry(
-      id: 3,
-      name: 'Bapak Suroto',
-      location: 'Rumah',
-      note: 'Wawancara seputar pertanian sawah musim kemarau.',
-    ),
-    JournalEntry(
-      id: 4,
-      name: 'Bapak Suroto',
-      location: 'Rumah',
-      note: 'Tindak lanjut riset pengelolaan hasil tani.',
-    ),
-  ];
+  final List<JournalEntry> _entries = [];
 
   // Inline Form State
   bool _isFormOpen = false;
@@ -62,6 +39,31 @@ class _JournalPageState extends State<JournalPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEntries();
+  }
+
+  Future<void> _loadEntries() async {
+    final records = await _journalDatabase.getEntries();
+    if (!mounted || _hasLocalChanges) return;
+    setState(() {
+      _entries
+        ..clear()
+        ..addAll(
+          records.map(
+            (record) => JournalEntry(
+              id: record.id,
+              name: record.name,
+              location: record.location,
+              note: record.note,
+            ),
+          ),
+        );
+    });
+  }
 
   @override
   void dispose() {
@@ -101,7 +103,7 @@ class _JournalPageState extends State<JournalPage> {
     });
   }
 
-  void _saveForm() {
+  Future<void> _saveForm() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
@@ -110,28 +112,54 @@ class _JournalPageState extends State<JournalPage> {
         : _locationController.text.trim();
     final note = _noteController.text.trim();
 
-    setState(() {
-      if (_editingEntry == null) {
+    final editingEntry = _editingEntry;
+    _hasLocalChanges = true;
+    if (editingEntry == null) {
+      final temporaryId = -DateTime.now().microsecondsSinceEpoch;
+      setState(() {
         _entries.add(
           JournalEntry(
-            id: _nextId++,
+            id: temporaryId,
             name: name,
             location: location,
             note: note,
           ),
         );
-      } else {
-        _editingEntry!
+        _isFormOpen = false;
+        _editingEntry = null;
+        _nameController.clear();
+        _locationController.clear();
+        _noteController.clear();
+      });
+      final id = await _journalDatabase.insertEntry(
+        name: name,
+        location: location,
+        note: note,
+      );
+      if (!mounted) return;
+      setState(() {
+        final index = _entries.indexWhere((entry) => entry.id == temporaryId);
+        if (index != -1) _entries[index].id = id;
+      });
+    } else {
+      setState(() {
+        editingEntry
           ..name = name
           ..location = location
           ..note = note;
-      }
-      _isFormOpen = false;
-      _editingEntry = null;
-      _nameController.clear();
-      _locationController.clear();
-      _noteController.clear();
-    });
+        _isFormOpen = false;
+        _editingEntry = null;
+        _nameController.clear();
+        _locationController.clear();
+        _noteController.clear();
+      });
+      await _journalDatabase.updateEntry(
+        id: editingEntry.id,
+        name: name,
+        location: location,
+        note: note,
+      );
+    }
   }
 
   Future<void> _deleteEntry(JournalEntry entry) async {
@@ -140,7 +168,9 @@ class _JournalPageState extends State<JournalPage> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Hapus Data Responden?'),
-        content: Text('Data "${entry.name}" (ID: ${entry.id}) akan dihapus secara permanen.'),
+        content: Text(
+          'Data "${entry.name}" (ID: ${entry.id}) akan dihapus secara permanen.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -158,12 +188,14 @@ class _JournalPageState extends State<JournalPage> {
       ),
     );
     if (confirmed == true && mounted) {
+      _hasLocalChanges = true;
       setState(() {
         _entries.remove(entry);
         if (_editingEntry == entry) {
           _closeForm();
         }
       });
+      await _journalDatabase.deleteEntry(entry.id);
     }
   }
 
@@ -254,7 +286,9 @@ class _JournalPageState extends State<JournalPage> {
                       // Summary Bar: Log Wawancara Terbaru (X Data)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
@@ -325,9 +359,7 @@ class _JournalPageState extends State<JournalPage> {
             bottom: 0,
             child: Container(
               height: 68,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE29F2B),
-              ),
+              decoration: const BoxDecoration(color: Color(0xFFE29F2B)),
               child: SafeArea(
                 top: false,
                 child: Row(
@@ -338,7 +370,8 @@ class _JournalPageState extends State<JournalPage> {
                       onTap: () {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                              builder: (_) => const MainMenuPage()),
+                            builder: (_) => const MainMenuPage(),
+                          ),
                           (route) => false,
                         );
                       },
@@ -349,7 +382,8 @@ class _JournalPageState extends State<JournalPage> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (_) => const StopwatchPage()),
+                            builder: (_) => const StopwatchPage(),
+                          ),
                         );
                       },
                     ),
@@ -358,8 +392,7 @@ class _JournalPageState extends State<JournalPage> {
                       label: 'Help',
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => const ManualPage()),
+                          MaterialPageRoute(builder: (_) => const ManualPage()),
                         );
                       },
                     ),
@@ -383,10 +416,7 @@ class _JournalPageState extends State<JournalPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE5A638),
-          width: 2.5,
-        ),
+        border: Border.all(color: const Color(0xFFE5A638), width: 2.5),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F000000),
@@ -446,7 +476,9 @@ class _JournalPageState extends State<JournalPage> {
                       decoration: const InputDecoration(
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 12),
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -481,7 +513,9 @@ class _JournalPageState extends State<JournalPage> {
                       decoration: const InputDecoration(
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 12),
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -517,7 +551,9 @@ class _JournalPageState extends State<JournalPage> {
                       decoration: const InputDecoration(
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 12),
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -596,10 +632,7 @@ class _JournalPageState extends State<JournalPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE5A638),
-          width: 2.5,
-        ),
+        border: Border.all(color: const Color(0xFFE5A638), width: 2.5),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F000000),
@@ -721,10 +754,12 @@ class _JournalPageState extends State<JournalPage> {
           child: const Text('Tambah Responden Baru'),
         ),
         if (_isFormOpen) _buildFormCard(),
-        ..._entries.map((e) => ListTile(
-              title: Text(e.name),
-              subtitle: Text('${e.location} - ${e.note}'),
-            )),
+        ..._entries.map(
+          (e) => ListTile(
+            title: Text(e.name),
+            subtitle: Text('${e.location} - ${e.note}'),
+          ),
+        ),
       ],
     );
   }
@@ -743,11 +778,7 @@ class _JournalPageState extends State<JournalPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: const Color(0xFF3E2712),
-              size: 26,
-            ),
+            Icon(icon, color: const Color(0xFF3E2712), size: 26),
             const SizedBox(height: 2),
             Text(
               label,
