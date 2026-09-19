@@ -24,15 +24,17 @@ class _DigitSumPageState extends State<DigitSumPage> {
 
   void _sum() {
     final input = _controller.text.trim();
-    if (!RegExp(r'^\d+$').hasMatch(input)) {
+    final digits = RegExp(
+      r'[0-9]',
+    ).allMatches(input).map((match) => int.parse(match.group(0)!)).toList();
+    if (digits.isEmpty) {
       setState(() {
-        _error = 'Masukkan deretan angka tanpa spasi.';
+        _error = 'Masukkan teks yang mengandung angka.';
         _process = null;
         _total = null;
       });
       return;
     }
-    final digits = input.split('').map(int.parse).toList();
     setState(() {
       _error = null;
       _process = digits.join(' + ');
@@ -107,9 +109,7 @@ class _DigitSumPageState extends State<DigitSumPage> {
             bottom: 0,
             child: Container(
               height: 68,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE29F2B),
-              ),
+              decoration: const BoxDecoration(color: Color(0xFFE29F2B)),
               child: SafeArea(
                 top: false,
                 child: Row(
@@ -120,7 +120,8 @@ class _DigitSumPageState extends State<DigitSumPage> {
                       onTap: () {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                              builder: (_) => const MainMenuPage()),
+                            builder: (_) => const MainMenuPage(),
+                          ),
                           (route) => false,
                         );
                       },
@@ -131,7 +132,8 @@ class _DigitSumPageState extends State<DigitSumPage> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (_) => const StopwatchPage()),
+                            builder: (_) => const StopwatchPage(),
+                          ),
                         );
                       },
                     ),
@@ -140,8 +142,7 @@ class _DigitSumPageState extends State<DigitSumPage> {
                       label: 'Help',
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => const ManualPage()),
+                          MaterialPageRoute(builder: (_) => const ManualPage()),
                         );
                       },
                     ),
@@ -160,10 +161,7 @@ class _DigitSumPageState extends State<DigitSumPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE5A638),
-          width: 2.5,
-        ),
+        border: Border.all(color: const Color(0xFFE5A638), width: 2.5),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F000000),
@@ -187,7 +185,7 @@ class _DigitSumPageState extends State<DigitSumPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Deretan Angka (Tanpa Spasi)',
+                    'Masukkan Teks atau Angka',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -209,10 +207,12 @@ class _DigitSumPageState extends State<DigitSumPage> {
                         color: Color(0xFF2D241B),
                       ),
                       decoration: const InputDecoration(
-                        hintText: 'Contoh: 852',
+                        hintText: 'Contoh: Nilai 854',
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 12),
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -238,10 +238,7 @@ class _DigitSumPageState extends State<DigitSumPage> {
                 ),
                 child: const Text(
                   'Jumlahkan',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -256,10 +253,7 @@ class _DigitSumPageState extends State<DigitSumPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE5A638),
-          width: 2.5,
-        ),
+        border: Border.all(color: const Color(0xFFE5A638), width: 2.5),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F000000),
@@ -390,11 +384,7 @@ class _DigitSumPageState extends State<DigitSumPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: const Color(0xFF3E2712),
-              size: 26,
-            ),
+            Icon(icon, color: const Color(0xFF3E2712), size: 26),
             const SizedBox(height: 2),
             Text(
               label,
@@ -410,4 +400,3 @@ class _DigitSumPageState extends State<DigitSumPage> {
     );
   }
 }
-

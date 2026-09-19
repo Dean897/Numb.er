@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/calculator_utils.dart';
 import 'main_menu_page.dart';
 import 'manual_page.dart';
 import 'stopwatch_page.dart';
@@ -96,9 +97,7 @@ class _OddEvenPageState extends State<OddEvenPage> {
             bottom: 0,
             child: Container(
               height: 68,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE29F2B),
-              ),
+              decoration: const BoxDecoration(color: Color(0xFFE29F2B)),
               child: SafeArea(
                 top: false,
                 child: Row(
@@ -109,7 +108,8 @@ class _OddEvenPageState extends State<OddEvenPage> {
                       onTap: () {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                              builder: (_) => const MainMenuPage()),
+                            builder: (_) => const MainMenuPage(),
+                          ),
                           (route) => false,
                         );
                       },
@@ -120,7 +120,8 @@ class _OddEvenPageState extends State<OddEvenPage> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (_) => const StopwatchPage()),
+                            builder: (_) => const StopwatchPage(),
+                          ),
                         );
                       },
                     ),
@@ -129,8 +130,7 @@ class _OddEvenPageState extends State<OddEvenPage> {
                       label: 'Help',
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => const ManualPage()),
+                          MaterialPageRoute(builder: (_) => const ManualPage()),
                         );
                       },
                     ),
@@ -149,10 +149,7 @@ class _OddEvenPageState extends State<OddEvenPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE5A638),
-          width: 2.5,
-        ),
+        border: Border.all(color: const Color(0xFFE5A638), width: 2.5),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F000000),
@@ -192,6 +189,7 @@ class _OddEvenPageState extends State<OddEvenPage> {
                     child: TextField(
                       controller: _controller,
                       keyboardType: TextInputType.number,
+                      inputFormatters: [CalculatorDigitLimitFormatter()],
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -200,7 +198,9 @@ class _OddEvenPageState extends State<OddEvenPage> {
                       decoration: const InputDecoration(
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 12),
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -226,10 +226,7 @@ class _OddEvenPageState extends State<OddEvenPage> {
                 ),
                 child: const Text(
                   'Periksa',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -246,10 +243,7 @@ class _OddEvenPageState extends State<OddEvenPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE5A638),
-          width: 2.5,
-        ),
+        border: Border.all(color: const Color(0xFFE5A638), width: 2.5),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F000000),
@@ -317,11 +311,7 @@ class _OddEvenPageState extends State<OddEvenPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: const Color(0xFF3E2712),
-              size: 26,
-            ),
+            Icon(icon, color: const Color(0xFF3E2712), size: 26),
             const SizedBox(height: 2),
             Text(
               label,
@@ -337,4 +327,3 @@ class _OddEvenPageState extends State<OddEvenPage> {
     );
   }
 }
-
